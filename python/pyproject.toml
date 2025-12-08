@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cuemap"
-version = "0.2.1"
+version = "0.2.2"
 description = "Redis for AI Agents - High-performance temporal-associative memory"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -42,7 +42,7 @@ dev = [
 
 [project.urls]
 Homepage = "https://github.com/cuemap-dev/sdks"
-Documentation = "https://github.com/cuemap-dev/sdks/tree/main/python#readme"
+Documentation = "https://github.com/cuemap-dev/sdks/blob/main/python/README.md"
 Repository = "https://github.com/cuemap-dev/sdks"
 Issues = "https://github.com/cuemap-dev/sdks/issues"
 Engine = "https://github.com/cuemap-dev/engine"
