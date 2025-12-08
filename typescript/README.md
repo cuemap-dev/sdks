@@ -217,7 +217,7 @@ try {
 }
 ```
 
-## Performance
+## Performance (~1M memories)
 
 - **Write P99**: ~0.33ms
 - **Read P99**: ~0.37ms
@@ -241,7 +241,6 @@ try {
 
 - [Engine Repository](https://github.com/cuemap-dev/engine)
 - [SDKs Repository](https://github.com/cuemap-dev/sdks)
-- [Production Guide](https://github.com/cuemap-dev/engine/blob/main/PRODUCTION.md)
 
 ## License
 

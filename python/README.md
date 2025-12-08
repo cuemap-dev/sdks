@@ -101,7 +101,7 @@ results = client.recall(["food", "italian"])
 # Sushi is filtered out (only matches 1 cue)
 ```
 
-### Performance
+### Performance (~1M memories)
 
 - **Write P99**: 0.33ms
 - **Read P99**: 0.37ms
