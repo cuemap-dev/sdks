@@ -189,24 +189,16 @@ CueMap requires a running engine. Choose your deployment:
 ### Option 1: Docker (Recommended)
 
 ```bash
-docker run -p 8080:8080 cuemap/engine:latest
+docker run -p 8080:8080 YOUR_USERNAME/cuemap-engine:latest
 ```
 
 ### Option 2: From Source
 
 ```bash
-git clone https://github.com/cuemap-dev/cuemap
-cd cuemap/rust_engine
+git clone https://github.com/cuemap-dev/engine
+cd engine
 cargo build --release
 ./target/release/cuemap-rust --port 8080
-```
-
-### Option 3: Docker Compose
-
-```bash
-git clone https://github.com/cuemap-dev/cuemap
-cd cuemap
-docker-compose up -d
 ```
 
 ## Configuration
@@ -288,10 +280,9 @@ async with AsyncCueMap() as client:
 
 ## Documentation
 
-- [GitHub Repository](https://github.com/cuemap-dev/cuemap)
-- [Production Guide](https://github.com/cuemap-dev/cuemap/blob/main/rust_engine/PRODUCTION.md)
-- [Docker Hub](https://hub.docker.com/r/cuemap/engine)
-- [Examples](https://github.com/cuemap-dev/cuemap/tree/main/cuemap-sdk/examples)
+- [Engine Repository](https://github.com/cuemap-dev/engine)
+- [SDKs Repository](https://github.com/cuemap-dev/sdks)
+- [Examples](https://github.com/cuemap-dev/sdks/tree/main/python/examples)
 
 ## License
 
