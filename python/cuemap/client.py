@@ -1,0 +1,316 @@
+"""Pure CueMap client - no magic, just speed."""
+
+import httpx
+from typing import List, Optional, Dict, Any
+
+from .models import Memory, RecallResult
+from .exceptions import CueMapError, ConnectionError, AuthenticationError
+
+
+class CueMap:
+    """
+    Pure CueMap client.
+    
+    No auto-cue extraction. No semantic matching. Just fast memory storage.
+    
+    Example:
+        >>> client = CueMap()
+        >>> client.add("Important note", cues=["work", "urgent"])
+        >>> results = client.recall(["work"])
+    """
+    
+    def __init__(
+        self,
+        url: str = "http://localhost:8080",
+        api_key: Optional[str] = None,
+        project_id: Optional[str] = None,
+        timeout: float = 30.0
+    ):
+        """
+        Initialize CueMap client.
+        
+        Args:
+            url: CueMap server URL
+            api_key: Optional API key for authentication
+            project_id: Optional project ID for multi-tenancy
+            timeout: Request timeout in seconds
+        """
+        self.url = url
+        self.api_key = api_key
+        self.project_id = project_id
+        
+        self.client = httpx.Client(
+            base_url=url,
+            timeout=timeout
+        )
+    
+    def _headers(self) -> Dict[str, str]:
+        """Get request headers."""
+        headers = {}
+        if self.api_key:
+            headers["x-api-key"] = self.api_key
+        return headers
+    
+    def _endpoint(self, path: str) -> str:
+        """Get endpoint with optional project_id."""
+        if self.project_id:
+            return f"/v1/{self.project_id}{path}"
+        return path
+    
+    def add(
+        self,
+        content: str,
+        cues: List[str],
+        metadata: Optional[Dict[str, Any]] = None
+    ) -> str:
+        """
+        Add a memory.
+        
+        Args:
+            content: Memory content
+            cues: List of cues (tags) for retrieval
+            metadata: Optional metadata
+            
+        Returns:
+            Memory ID
+            
+        Example:
+            >>> client.add(
+            ...     "Meeting with John at 3pm",
+            ...     cues=["meeting", "john", "calendar"]
+            ... )
+        """
+        response = self.client.post(
+            self._endpoint("/memories"),
+            json={
+                "content": content,
+                "cues": cues,
+                "metadata": metadata or {}
+            },
+            headers=self._headers()
+        )
+        
+        if response.status_code == 401:
+            raise AuthenticationError("Invalid API key")
+        elif response.status_code != 200:
+            raise CueMapError(f"Failed to add memory: {response.status_code}")
+        
+        return response.json()["id"]
+    
+    def recall(
+        self,
+        cues: List[str],
+        limit: int = 10,
+        auto_reinforce: bool = False
+    ) -> List[RecallResult]:
+        """
+        Recall memories by cues.
+        
+        Args:
+            cues: List of cues to search for
+            limit: Maximum results to return
+            auto_reinforce: Automatically reinforce retrieved memories
+            
+        Returns:
+            List of recall results
+            
+        Example:
+            >>> results = client.recall(["meeting", "john"])
+            >>> for r in results:
+            ...     print(r.content)
+        """
+        response = self.client.post(
+            self._endpoint("/recall"),
+            json={
+                "cues": cues,
+                "limit": limit,
+                "auto_reinforce": auto_reinforce
+            },
+            headers=self._headers()
+        )
+        
+        if response.status_code != 200:
+            raise CueMapError(f"Failed to recall: {response.status_code}")
+        
+        results = response.json()["results"]
+        return [RecallResult(**r) for r in results]
+    
+    def reinforce(self, memory_id: str, cues: List[str]) -> bool:
+        """
+        Reinforce a memory on specific cue pathways.
+        
+        Args:
+            memory_id: Memory ID
+            cues: Cues to reinforce on
+            
+        Returns:
+            Success status
+        """
+        response = self.client.patch(
+            self._endpoint(f"/memories/{memory_id}/reinforce"),
+            json={"cues": cues},
+            headers=self._headers()
+        )
+        
+        return response.status_code == 200
+    
+    def get(self, memory_id: str) -> Memory:
+        """Get a memory by ID."""
+        response = self.client.get(
+            self._endpoint(f"/memories/{memory_id}"),
+            headers=self._headers()
+        )
+        
+        if response.status_code == 404:
+            raise CueMapError(f"Memory not found: {memory_id}")
+        elif response.status_code != 200:
+            raise CueMapError(f"Failed to get memory: {response.status_code}")
+        
+        return Memory(**response.json())
+    
+    def stats(self) -> Dict[str, Any]:
+        """Get server statistics."""
+        response = self.client.get(
+            self._endpoint("/stats"),
+            headers=self._headers()
+        )
+        
+        return response.json()
+    
+    def close(self):
+        """Close the client."""
+        self.client.close()
+    
+    def __enter__(self):
+        return self
+    
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+
+
+class AsyncCueMap:
+    """
+    Async CueMap client.
+    
+    Example:
+        >>> async with AsyncCueMap() as client:
+        ...     await client.add("Note", cues=["work"])
+        ...     results = await client.recall(["work"])
+    """
+    
+    def __init__(
+        self,
+        url: str = "http://localhost:8080",
+        api_key: Optional[str] = None,
+        project_id: Optional[str] = None,
+        timeout: float = 30.0
+    ):
+        self.url = url
+        self.api_key = api_key
+        self.project_id = project_id
+        
+        self.client = httpx.AsyncClient(
+            base_url=url,
+            timeout=timeout
+        )
+    
+    def _headers(self) -> Dict[str, str]:
+        headers = {}
+        if self.api_key:
+            headers["x-api-key"] = self.api_key
+        return headers
+    
+    def _endpoint(self, path: str) -> str:
+        if self.project_id:
+            return f"/v1/{self.project_id}{path}"
+        return path
+    
+    async def add(
+        self,
+        content: str,
+        cues: List[str],
+        metadata: Optional[Dict[str, Any]] = None
+    ) -> str:
+        """Add a memory (async)."""
+        response = await self.client.post(
+            self._endpoint("/memories"),
+            json={
+                "content": content,
+                "cues": cues,
+                "metadata": metadata or {}
+            },
+            headers=self._headers()
+        )
+        
+        if response.status_code == 401:
+            raise AuthenticationError("Invalid API key")
+        elif response.status_code != 200:
+            raise CueMapError(f"Failed to add memory: {response.status_code}")
+        
+        return response.json()["id"]
+    
+    async def recall(
+        self,
+        cues: List[str],
+        limit: int = 10,
+        auto_reinforce: bool = False
+    ) -> List[RecallResult]:
+        """Recall memories (async)."""
+        response = await self.client.post(
+            self._endpoint("/recall"),
+            json={
+                "cues": cues,
+                "limit": limit,
+                "auto_reinforce": auto_reinforce
+            },
+            headers=self._headers()
+        )
+        
+        if response.status_code != 200:
+            raise CueMapError(f"Failed to recall: {response.status_code}")
+        
+        results = response.json()["results"]
+        return [RecallResult(**r) for r in results]
+    
+    async def reinforce(self, memory_id: str, cues: List[str]) -> bool:
+        """Reinforce a memory (async)."""
+        response = await self.client.patch(
+            self._endpoint(f"/memories/{memory_id}/reinforce"),
+            json={"cues": cues},
+            headers=self._headers()
+        )
+        
+        return response.status_code == 200
+    
+    async def get(self, memory_id: str) -> Memory:
+        """Get a memory by ID (async)."""
+        response = await self.client.get(
+            self._endpoint(f"/memories/{memory_id}"),
+            headers=self._headers()
+        )
+        
+        if response.status_code == 404:
+            raise CueMapError(f"Memory not found: {memory_id}")
+        elif response.status_code != 200:
+            raise CueMapError(f"Failed to get memory: {response.status_code}")
+        
+        return Memory(**response.json())
+    
+    async def stats(self) -> Dict[str, Any]:
+        """Get server statistics (async)."""
+        response = await self.client.get(
+            self._endpoint("/stats"),
+            headers=self._headers()
+        )
+        
+        return response.json()
+    
+    async def close(self):
+        """Close the client."""
+        await self.client.aclose()
+    
+    async def __aenter__(self):
+        return self
+    
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        await self.close()

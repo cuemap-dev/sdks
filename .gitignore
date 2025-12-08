@@ -9,3 +9,18 @@ dist/
 *.egg-info/
 venv/
 .venv
+
+# TypeScript/Node
+node_modules/
+*.tsbuildinfo
+dist/
+.npm
+
+# IDE
+.vscode/
+.idea/
+.DS_Store
+
+# Testing
+.pytest_cache/
+.coverage
