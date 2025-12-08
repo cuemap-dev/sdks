@@ -62,7 +62,6 @@ cargo build --release
 ## Links
 
 - [Engine Repository](https://github.com/cuemap-dev/engine)
-- [Production Guide](https://github.com/cuemap-dev/engine/blob/main/PRODUCTION.md)
 
 ## License
 
