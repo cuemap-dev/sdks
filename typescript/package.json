@@ -1,6 +1,6 @@
 {
   "name": "cuemap",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Redis for AI Agents - High-performance temporal-associative memory",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
