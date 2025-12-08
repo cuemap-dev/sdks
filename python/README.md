@@ -189,7 +189,7 @@ CueMap requires a running engine. Choose your deployment:
 ### Option 1: Docker (Recommended)
 
 ```bash
-docker run -p 8080:8080 YOUR_USERNAME/cuemap-engine:latest
+docker run -p 8080:8080 cuemap/engine:latest
 ```
 
 ### Option 2: From Source
