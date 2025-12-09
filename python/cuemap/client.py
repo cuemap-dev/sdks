@@ -48,14 +48,10 @@ class CueMap:
         """Get request headers."""
         headers = {}
         if self.api_key:
-            headers["x-api-key"] = self.api_key
-        return headers
-    
-    def _endpoint(self, path: str) -> str:
-        """Get endpoint with optional project_id."""
+            headers["X-API-Key"] = self.api_key
         if self.project_id:
-            return f"/v1/{self.project_id}{path}"
-        return path
+            headers["X-Project-ID"] = self.project_id
+        return headers
     
     def add(
         self,
@@ -81,7 +77,7 @@ class CueMap:
             ... )
         """
         response = self.client.post(
-            self._endpoint("/memories"),
+            "/memories",
             json={
                 "content": content,
                 "cues": cues,
@@ -120,7 +116,7 @@ class CueMap:
             ...     print(r.content)
         """
         response = self.client.post(
-            self._endpoint("/recall"),
+            "/recall",
             json={
                 "cues": cues,
                 "limit": limit,
@@ -147,7 +143,7 @@ class CueMap:
             Success status
         """
         response = self.client.patch(
-            self._endpoint(f"/memories/{memory_id}/reinforce"),
+            f"/memories/{memory_id}/reinforce",
             json={"cues": cues},
             headers=self._headers()
         )
@@ -157,7 +153,7 @@ class CueMap:
     def get(self, memory_id: str) -> Memory:
         """Get a memory by ID."""
         response = self.client.get(
-            self._endpoint(f"/memories/{memory_id}"),
+            f"/memories/{memory_id}",
             headers=self._headers()
         )
         
@@ -171,7 +167,7 @@ class CueMap:
     def stats(self) -> Dict[str, Any]:
         """Get server statistics."""
         response = self.client.get(
-            self._endpoint("/stats"),
+            "/stats",
             headers=self._headers()
         )
         
@@ -217,13 +213,10 @@ class AsyncCueMap:
     def _headers(self) -> Dict[str, str]:
         headers = {}
         if self.api_key:
-            headers["x-api-key"] = self.api_key
-        return headers
-    
-    def _endpoint(self, path: str) -> str:
+            headers["X-API-Key"] = self.api_key
         if self.project_id:
-            return f"/v1/{self.project_id}{path}"
-        return path
+            headers["X-Project-ID"] = self.project_id
+        return headers
     
     async def add(
         self,
@@ -233,7 +226,7 @@ class AsyncCueMap:
     ) -> str:
         """Add a memory (async)."""
         response = await self.client.post(
-            self._endpoint("/memories"),
+            "/memories",
             json={
                 "content": content,
                 "cues": cues,
@@ -257,7 +250,7 @@ class AsyncCueMap:
     ) -> List[RecallResult]:
         """Recall memories (async)."""
         response = await self.client.post(
-            self._endpoint("/recall"),
+            "/recall",
             json={
                 "cues": cues,
                 "limit": limit,
@@ -275,7 +268,7 @@ class AsyncCueMap:
     async def reinforce(self, memory_id: str, cues: List[str]) -> bool:
         """Reinforce a memory (async)."""
         response = await self.client.patch(
-            self._endpoint(f"/memories/{memory_id}/reinforce"),
+            f"/memories/{memory_id}/reinforce",
             json={"cues": cues},
             headers=self._headers()
         )
@@ -285,7 +278,7 @@ class AsyncCueMap:
     async def get(self, memory_id: str) -> Memory:
         """Get a memory by ID (async)."""
         response = await self.client.get(
-            self._endpoint(f"/memories/{memory_id}"),
+            f"/memories/{memory_id}",
             headers=self._headers()
         )
         
@@ -299,7 +292,7 @@ class AsyncCueMap:
     async def stats(self) -> Dict[str, Any]:
         """Get server statistics (async)."""
         response = await self.client.get(
-            self._endpoint("/stats"),
+            "/stats",
             headers=self._headers()
         )
         

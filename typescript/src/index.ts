@@ -70,17 +70,14 @@ export class CueMap {
     };
     
     if (this.apiKey) {
-      headers['x-api-key'] = this.apiKey;
+      headers['X-API-Key'] = this.apiKey;
+    }
+    
+    if (this.projectId) {
+      headers['X-Project-ID'] = this.projectId;
     }
     
     return headers;
-  }
-
-  private getEndpoint(path: string): string {
-    if (this.projectId) {
-      return `${this.url}/v1/${this.projectId}${path}`;
-    }
-    return `${this.url}${path}`;
   }
 
   private async request<T>(
@@ -92,7 +89,7 @@ export class CueMap {
     const timeoutId = setTimeout(() => controller.abort(), this.timeout);
 
     try {
-      const response = await fetch(this.getEndpoint(path), {
+      const response = await fetch(`${this.url}${path}`, {
         method,
         headers: this.getHeaders(),
         body: body ? JSON.stringify(body) : undefined,
