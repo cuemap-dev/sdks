@@ -63,6 +63,7 @@ memory_id = client.add(
 ### Recall Memories
 
 ```python
+# OR logic (default): matches any cue
 results = client.recall(
     cues=["meeting", "john"],
     limit=10
@@ -70,6 +71,18 @@ results = client.recall(
 
 for result in results:
     print(f"{result.content} (score: {result.score})")
+
+# AND logic: requires all cues to match
+results = client.recall(
+    cues=["meeting", "john"],
+    min_intersection=2  # Both cues must match
+)
+
+# Cross-domain query (multi-tenant mode)
+results = client.recall(
+    cues=["urgent"],
+    projects=["sales", "support", "engineering"]
+)
 ```
 
 ### Reinforce Memory

@@ -70,6 +70,7 @@ const memoryId = await client.add(
 ### Recall Memories
 
 ```typescript
+// OR logic (default): matches any cue
 const results = await client.recall(
   ["meeting", "john"],
   10,      // limit (optional, default: 10)
@@ -79,6 +80,23 @@ const results = await client.recall(
 for (const result of results) {
   console.log(`${result.content} (score: ${result.score})`);
 }
+
+// AND logic: requires all cues to match
+const strictResults = await client.recall(
+  ["meeting", "john"],
+  10,
+  false,
+  2  // min_intersection: both cues must match
+);
+
+// Cross-domain query (multi-tenant mode)
+const crossDomainResults = await client.recall(
+  ["urgent"],
+  10,
+  false,
+  undefined,
+  ["sales", "support", "engineering"]  // projects
+);
 ```
 
 ### Reinforce Memory

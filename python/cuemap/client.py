@@ -97,7 +97,9 @@ class CueMap:
         self,
         cues: List[str],
         limit: int = 10,
-        auto_reinforce: bool = False
+        auto_reinforce: bool = False,
+        min_intersection: Optional[int] = None,
+        projects: Optional[List[str]] = None
     ) -> List[RecallResult]:
         """
         Recall memories by cues.
@@ -106,22 +108,37 @@ class CueMap:
             cues: List of cues to search for
             limit: Maximum results to return
             auto_reinforce: Automatically reinforce retrieved memories
+            min_intersection: Minimum number of cues that must match (for strict AND logic)
+            projects: List of project IDs for cross-domain queries (multi-tenant only)
             
         Returns:
             List of recall results
             
         Example:
+            >>> # OR logic (default): matches any cue
             >>> results = client.recall(["meeting", "john"])
-            >>> for r in results:
-            ...     print(r.content)
+            
+            >>> # AND logic: requires both cues
+            >>> results = client.recall(["meeting", "john"], min_intersection=2)
+            
+            >>> # Cross-domain query (multi-tenant)
+            >>> results = client.recall(["urgent"], projects=["sales", "support"])
         """
+        payload = {
+            "cues": cues,
+            "limit": limit,
+            "auto_reinforce": auto_reinforce
+        }
+        
+        if min_intersection is not None:
+            payload["min_intersection"] = min_intersection
+        
+        if projects is not None:
+            payload["projects"] = projects
+        
         response = self.client.post(
             "/recall",
-            json={
-                "cues": cues,
-                "limit": limit,
-                "auto_reinforce": auto_reinforce
-            },
+            json=payload,
             headers=self._headers()
         )
         
@@ -246,16 +263,26 @@ class AsyncCueMap:
         self,
         cues: List[str],
         limit: int = 10,
-        auto_reinforce: bool = False
+        auto_reinforce: bool = False,
+        min_intersection: Optional[int] = None,
+        projects: Optional[List[str]] = None
     ) -> List[RecallResult]:
         """Recall memories (async)."""
+        payload = {
+            "cues": cues,
+            "limit": limit,
+            "auto_reinforce": auto_reinforce
+        }
+        
+        if min_intersection is not None:
+            payload["min_intersection"] = min_intersection
+        
+        if projects is not None:
+            payload["projects"] = projects
+        
         response = await self.client.post(
             "/recall",
-            json={
-                "cues": cues,
-                "limit": limit,
-                "auto_reinforce": auto_reinforce
-            },
+            json=payload,
             headers=self._headers()
         )
         

@@ -38,6 +38,8 @@ export interface RecallRequest {
   cues: string[];
   limit?: number;
   auto_reinforce?: boolean;
+  min_intersection?: number;
+  projects?: string[];
 }
 
 export interface ReinforceRequest {
@@ -133,16 +135,50 @@ export class CueMap {
 
   /**
    * Recall memories by cues
+   * 
+   * @param cues - List of cues to search for
+   * @param limit - Maximum results to return
+   * @param autoReinforce - Automatically reinforce retrieved memories
+   * @param minIntersection - Minimum number of cues that must match (for strict AND logic)
+   * @param projects - List of project IDs for cross-domain queries (multi-tenant only)
+   * 
+   * @example
+   * // OR logic (default): matches any cue
+   * const results = await client.recall(['meeting', 'john']);
+   * 
+   * @example
+   * // AND logic: requires both cues
+   * const results = await client.recall(['meeting', 'john'], 10, false, 2);
+   * 
+   * @example
+   * // Cross-domain query (multi-tenant)
+   * const results = await client.recall(['urgent'], 10, false, undefined, ['sales', 'support']);
    */
   async recall(
     cues: string[],
     limit: number = 10,
-    autoReinforce: boolean = false
+    autoReinforce: boolean = false,
+    minIntersection?: number,
+    projects?: string[]
   ): Promise<RecallResult[]> {
+    const payload: RecallRequest = {
+      cues,
+      limit,
+      auto_reinforce: autoReinforce,
+    };
+    
+    if (minIntersection !== undefined) {
+      payload.min_intersection = minIntersection;
+    }
+    
+    if (projects !== undefined) {
+      payload.projects = projects;
+    }
+    
     const response = await this.request<{ results: RecallResult[] }>(
       'POST',
       '/recall',
-      { cues, limit, auto_reinforce: autoReinforce }
+      payload
     );
     return response.results;
   }
