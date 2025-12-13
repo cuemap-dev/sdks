@@ -25,6 +25,7 @@ export interface RecallResult {
   score: number;
   intersection_count: number;
   recency_score: number;
+  reinforcement_score: number;
   metadata: Record<string, any>;
 }
 
@@ -70,15 +71,15 @@ export class CueMap {
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
     };
-    
+
     if (this.apiKey) {
       headers['X-API-Key'] = this.apiKey;
     }
-    
+
     if (this.projectId) {
       headers['X-Project-ID'] = this.projectId;
     }
-    
+
     return headers;
   }
 
@@ -166,15 +167,15 @@ export class CueMap {
       limit,
       auto_reinforce: autoReinforce,
     };
-    
+
     if (minIntersection !== undefined) {
       payload.min_intersection = minIntersection;
     }
-    
+
     if (projects !== undefined) {
       payload.projects = projects;
     }
-    
+
     const response = await this.request<{ results: RecallResult[] }>(
       'POST',
       '/recall',

@@ -21,4 +21,5 @@ class RecallResult(BaseModel):
     score: float
     intersection_count: int
     recency_score: float
+    reinforcement_score: float
     metadata: Dict[str, Any] = Field(default_factory=dict)
